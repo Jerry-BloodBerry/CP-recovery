@@ -1,11 +1,12 @@
 #include "CPBreaker.h"
 #include <string>
 
-CPBreaker::CPBreaker(int* characters, int char_count, int pass_length)
+CPBreaker::CPBreaker(int* characters, int char_count, int pass_length, std::string hash_string)
 {
     char_codes = characters;
     char_set_count = char_count;
     password_length = pass_length;
+    hash = hash_string;
 }
 
 std::string CPBreaker::build_characters_string(std::string symbols)

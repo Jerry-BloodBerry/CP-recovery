@@ -12,14 +12,14 @@ class CPBreaker
 		bool password_found = false;
 		int password_length;
 		int char_set_count;
-		std::string build_characters_string(std::string symbols);
+		static std::string build_characters_string(std::string symbols);
 		bool increment_password_array(int *password_array);
 		std::string build_password_string_from_array(int* passwordArray);
 	public:
 		std::string hash;
-		CPBreaker(int* characters, int char_count, int pass_length);
+		CPBreaker(int* characters, int char_count, int pass_length, std::string hash_string);
 		~CPBreaker();
-		int* build_characters_array(std::string symbols) {
+		static int* build_characters_array(std::string symbols) {
 			std::string characters_string = build_characters_string(symbols);
 			int characters_count = characters_string.length();
 			int* characters = new int[characters_count];

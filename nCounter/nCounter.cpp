@@ -14,105 +14,6 @@ using namespace Botan;
 const int NUM_THREADS = std::thread::hardware_concurrency();
 bool passwordWasFound = false;
 
-
-string buildPasswordStringFromArray(int* passwordArray, int passwordLength, int* charCodes) {
-    string password;
-    password.reserve(passwordLength);
-    for (int i = 0; i < passwordLength; ++i) {
-        password += (char)(charCodes[passwordArray[i]]);
-    }
-    return password;
-}
-
-bool incrementPasswordArray(int* passwordArray, int passwordLength, int charCount) {
-    bool incrementationSucceeded = false;
-    if (passwordArray[passwordLength - 1] + 1 != charCount) {
-        ++passwordArray[passwordLength - 1];
-        incrementationSucceeded = true;
-    }
-    else {
-        int i = 0;
-        while (i != passwordLength && passwordArray[passwordLength - 1 - i] + 1 == charCount) {
-            passwordArray[passwordLength - 1 - i] = 0;
-            ++i;
-        }
-        if (i != passwordLength) {
-            ++passwordArray[passwordLength - 1 - i];
-            incrementationSucceeded = true;
-        }
-    }
-    return incrementationSucceeded;
-}
-
-void countToN(int passwordLength, int* charCodes, int charCount, int startChar, int endChar) {
-    int* passwordArray = new int[passwordLength];
-    passwordArray[0] = startChar;
-    for (int i = 1; i < passwordLength; ++i) {
-        passwordArray[i] = 0;
-    }
-    bool incrementationSucceeded = true;
-    while (incrementationSucceeded && !passwordWasFound) {
-        string password = buildPasswordStringFromArray(passwordArray, passwordLength, charCodes);
-        bool result = check_bcrypt(password, "$2b$10$MOV.u1EbxIonlQ42OY53Mez/0WdAnJ.aQO1CUG7dBIrfq4SLyg3wS");
-        if (result) {
-            cout << "The password is: " << password << std::endl;
-            passwordWasFound = true;
-        }
-        incrementationSucceeded = incrementPasswordArray(passwordArray, passwordLength, charCount) && (passwordArray[0] != (char)endChar);
-    }
-    delete[] passwordArray;
-}
-
-string buildCharactersString(string symbols) {
-    bool containsSmallLetters = symbols.find('a') != std::string::npos;
-    bool containsBigLetters = symbols.find('A') != std::string::npos;
-    bool containsNumbers = symbols.find('0') != std::string::npos;
-    bool containsSymbols = symbols.find('%') != std::string::npos;
-
-    string charactersString = "";
-    if (containsSmallLetters) {
-        for (int i = 97; i < 123; ++i) {
-            charactersString += (char)i;
-        }
-    }
-    if (containsBigLetters) {
-        for (int i = 65; i < 91; ++i) {
-            charactersString += (char)i;
-        }
-    }
-    if (containsNumbers) {
-        for (int i = 48; i < 58; ++i) {
-            charactersString += (char)i;
-        }
-    }
-    if (containsSymbols) {
-        for (int i = 32; i < 48; ++i) {
-            charactersString += (char)i;
-        }
-        for (int i = 58; i < 65; ++i) {
-            charactersString += (char)i;
-        }
-        for (int i = 91; i < 97; ++i) {
-            charactersString += (char)i;
-        }
-        for (int i = 123; i < 127; ++i) {
-            charactersString += (char)i;
-        }
-    }
-    return charactersString;
-}
-
-int* buildCharactersArray(string symbols)
-{
-    string charactersString = buildCharactersString(symbols);
-    int charactersCount = charactersString.length();
-    int* characters = new int[charactersCount];
-    for (int i = 0; i < charactersCount; ++i) {
-        characters[i] = charactersString[i];
-    }
-    return characters;
-}
-
 void printHelp()
 {
     cout << "#### ####    #### ####   #   #### #  # #### ####" << std::endl;
@@ -180,22 +81,23 @@ int main(int argc, char* argv[])
     const int STEP = ceil(CHAR_COUNT / (float)NUM_THREADS);
 
     int charsLeft = CHAR_COUNT;
-    int* charCodes = buildCharactersArray("aA0%");
+    int* char_codes = CPBreaker::build_characters_array("a");
+    CPBreaker * password_breaker_ptr = new CPBreaker(char_codes, CHAR_COUNT, PASSWORD_LENGTH, "$2b$10$fMGdxFw5m19lT7q5pVhio.vpXKL4NAgGLPR4u1IwbY4JFsqIt1YD.");
 
     auto time_start = std::chrono::high_resolution_clock::now();
     std::vector<std::thread> my_threads;
     for (int i = 0; i < NUM_THREADS && charsLeft > 0; ++i) {
-        my_threads.push_back(std::thread{ countToN, PASSWORD_LENGTH, charCodes, CHAR_COUNT, i * STEP, i * STEP + fmin(STEP, charsLeft) });
+        my_threads.push_back(std::thread{ &CPBreaker::check_password_range, password_breaker_ptr, i * STEP, i * STEP + fmin(STEP, charsLeft) });
         charsLeft -= fmin(STEP, charsLeft);
     }
     cout << "All threads initialized\n";
-    cout << "Proceeding to check " << COMBINATIONS << " combinations";
+    cout << "Proceeding to check " << COMBINATIONS << " combinations" << std::endl;
     for (std::thread& thr : my_threads) {
         thr.join();
     }
     auto time_end = std::chrono::high_resolution_clock::now();
     auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(time_end - time_start).count();
     cout << "Execution time: " << duration << "ms" << std::endl;
-    delete[] charCodes;
+    delete[] char_codes;
     return 0;
 }

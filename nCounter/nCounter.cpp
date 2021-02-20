@@ -4,12 +4,10 @@
 #include <vector>
 #include <thread>
 #include <math.h>
-#include <botan/bcrypt.h>
 #include "CPBreaker.h"
 
 using std::cout;
 using std::string;
-using namespace Botan;
 
 const int NUM_THREADS = std::thread::hardware_concurrency();
 bool passwordWasFound = false;

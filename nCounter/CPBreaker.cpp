@@ -9,6 +9,36 @@ CPBreaker::CPBreaker(int* characters, int char_count, int pass_length, std::stri
     hash = hash_string;
 }
 
+int CPBreaker::get_array_size_for_symbols(std::string symbols) {
+    int size = 0;
+    int symbols_length = symbols.length();
+    for (int i = 0; i < symbols_length; i++)
+    {
+        if (symbols[i] == 'a' || symbols[i] == 'A') {
+            size += 26;
+        }
+        else if (symbols[i] == '0') {
+            size += 10;
+        }
+        else if (symbols[i] == '%') {
+            size += 33;
+        }
+        else {
+            throw std::runtime_error("Undefined symbol in function get_array_size_for_symbols");
+        }
+    }
+}
+
+int* CPBreaker::build_characters_array(std::string symbols) {
+    std::string characters_string = build_characters_string(symbols);
+    int characters_count = characters_string.length();
+    int* characters = new int[characters_count];
+    for (int i = 0; i < characters_count; ++i) {
+        characters[i] = characters_string[i];
+    }
+    return characters;
+}
+
 std::string CPBreaker::build_characters_string(std::string symbols)
 {
     bool containsSmallLetters = symbols.find('a') != std::string::npos;
@@ -49,6 +79,36 @@ std::string CPBreaker::build_characters_string(std::string symbols)
     return charactersString;
 }
 
+void CPBreaker::check_password_range(int startChar, int endChar)
+{
+    int* passwordArray = new int[password_length];
+    passwordArray[0] = startChar;
+    for (int i = 1; i < password_length; ++i) {
+        passwordArray[i] = 0;
+    }
+    bool incrementationSucceeded = true;
+    while (incrementationSucceeded && !password_found) {
+        std::string password = build_password_string_from_array(passwordArray);
+        bool result = Botan::check_bcrypt(password, hash);
+        if (result) {
+            std::cout << "The password is: " << password << std::endl;
+            password_found = true;
+        }
+        incrementationSucceeded = increment_password_array(passwordArray) && (passwordArray[0] != (char)endChar);
+    }
+    delete[] passwordArray;
+}
+
+std::string CPBreaker::build_password_string_from_array(int* passwordArray)
+{
+    std::string password;
+    password.reserve(password_length);
+    for (int i = 0; i < password_length; ++i) {
+        password += (char)(char_codes[passwordArray[i]]);
+    }
+    return password;
+}
+
 bool CPBreaker::increment_password_array(int* password_array)
 {
     bool incrementationSucceeded = false;
@@ -68,16 +128,6 @@ bool CPBreaker::increment_password_array(int* password_array)
         }
     }
     return incrementationSucceeded;
-}
-
-std::string CPBreaker::build_password_string_from_array(int* passwordArray)
-{
-    std::string password;
-    password.reserve(password_length);
-    for (int i = 0; i < password_length; ++i) {
-        password += (char)(char_codes[passwordArray[i]]);
-    }
-    return password;
 }
 
 CPBreaker::~CPBreaker()

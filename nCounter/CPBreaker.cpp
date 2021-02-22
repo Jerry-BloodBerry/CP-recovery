@@ -1,7 +1,7 @@
 #include "CPBreaker.h"
 #include <string>
 
-CPBreaker::CPBreaker(int* characters, int char_count, int pass_length, std::string hash_string)
+CPBreaker::CPBreaker(int* characters, unsigned int char_count, unsigned int pass_length, std::string hash_string)
 {
     char_codes = characters;
     char_set_count = char_count;
@@ -27,6 +27,7 @@ int CPBreaker::get_array_size_for_symbols(std::string symbols) {
             throw std::runtime_error("Undefined symbol in function get_array_size_for_symbols");
         }
     }
+    return size;
 }
 
 int* CPBreaker::build_characters_array(std::string symbols) {
@@ -79,7 +80,7 @@ std::string CPBreaker::build_characters_string(std::string symbols)
     return charactersString;
 }
 
-void CPBreaker::check_password_range(int startChar, int endChar)
+void CPBreaker::check_password_range(unsigned int startChar, unsigned int endChar)
 {
     int* passwordArray = new int[password_length];
     passwordArray[0] = startChar;
@@ -87,14 +88,14 @@ void CPBreaker::check_password_range(int startChar, int endChar)
         passwordArray[i] = 0;
     }
     bool incrementationSucceeded = true;
+    std::string password = "";
     while (incrementationSucceeded && !password_found) {
-        std::string password = build_password_string_from_array(passwordArray);
-        bool result = Botan::check_bcrypt(password, hash);
-        if (result) {
-            std::cout << "The password is: " << password << std::endl;
-            password_found = true;
-        }
+        password = build_password_string_from_array(passwordArray);
+        password_found = Botan::check_bcrypt(password, hash);
         incrementationSucceeded = increment_password_array(passwordArray) && (passwordArray[0] != (char)endChar);
+    }
+    if (password_found) {
+        std::cout << "The password is: " << password << std::endl;
     }
     delete[] passwordArray;
 }

@@ -4,6 +4,7 @@
 #include <string>
 #include <iostream>
 #include <botan/bcrypt.h>
+#include <botan/argon2.h>
 #include <botan/sha160.h>
 
 class CPBreaker

@@ -91,7 +91,10 @@ void CPBreaker::check_password_range(unsigned int startChar, unsigned int endCha
     std::string password = "";
     while (incrementationSucceeded && !password_found) {
         password = build_password_string_from_array(passwordArray);
-        password_found = Botan::check_bcrypt(password, hash);
+        bool result = Botan::argon2_check_pwhash(password.c_str(), password_length, "$argon2i$v=19$m=16,t=2,p=1$U000T0hQSjBQaUZCb0tBaw$o7WrL9n3BIV3AP5Q2Ax6sA");
+        if (result) {
+            password_found = true;
+        }
         incrementationSucceeded = increment_password_array(passwordArray) && (passwordArray[0] != (char)endChar);
     }
     if (password_found) {

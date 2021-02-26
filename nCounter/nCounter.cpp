@@ -21,14 +21,14 @@ string g_hash;
 
 void printHelp()
 {
-    cout << "#### ####    ####  ####    #    ####  #  #  ####  ####" << std::endl;
-    cout << "#    #  #    #     #  #   # #   #     # #   #     #  #" << std::endl;
-    cout << "#    ####    #     ####  #####  #     ##    ####  ####" << std::endl;
-    cout << "#    #       #     # #   #   #  #     # #   #     # # " << std::endl;
-    cout << "#### #       ####  #  #  #   #  ####  #  #  ####  #  #" << std::endl << std::endl;
-    cout << "CP CRACKER is a concurrent bruteforce password cracking utility." << std::endl;
+    cout << "#### ####    ####  ####  ####  ####  #   #  ####  ####  #   #" << std::endl;
+    cout << "#    #  #    #  #  #     #     #  #  #   #  #     #  #   # #" << std::endl;
+    cout << "#    ####    ####  ####  #     #  #  #   #  ####  ####    #" << std::endl;
+    cout << "#    #       # #   #     #     #  #   # #   #     # #     #" << std::endl;
+    cout << "#### #       #  #  ####  ####  ####    #    ####  #  #    #" << std::endl << std::endl;
+    cout << "CP RECOVERY is a concurrent bruteforce password cracking utility." << std::endl;
     cout << "This version is meant to run on CPU only." << std::endl;
-    cout << "Currently the following hash functions are supported: Bcrypt" << std::endl << std::endl;
+    cout << "Currently the following hash functions are supported: Argon" << std::endl << std::endl;
     cout << "Options:" << std::endl;
     cout << "-help => display help" << std::endl;
     cout << "-l => dash separated password length range, ex. 4-8 (m)" << std::endl;

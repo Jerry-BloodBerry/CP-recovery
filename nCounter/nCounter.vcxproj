@@ -147,11 +147,15 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Charset.cpp" />
     <ClCompile Include="CPBreaker.cpp" />
     <ClCompile Include="nCounter.cpp" />
+    <ClCompile Include="Password.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Charset.h" />
     <ClInclude Include="CPBreaker.h" />
+    <ClInclude Include="Password.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

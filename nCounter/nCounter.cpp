@@ -4,16 +4,17 @@
 #include <vector>
 #include <thread>
 #include <math.h>
-#include "CPBreaker.h"
 #include <regex>
 #include <fstream>
+#include "CPBreaker.h"
+#include "Charset.h"
+
 
 using std::cout;
 using std::string;
 
-const unsigned int NUM_THREADS = std::thread::hardware_concurrency();
-int* g_char_codes;
-unsigned int g_char_count;
+const unsigned int NUM_THREADS = std::thread::hardware_concurrency() * 2;
+Charset g_charset;
 unsigned int g_password_range_low;
 unsigned int g_password_range_high;
 string g_hash;
@@ -86,8 +87,7 @@ void handleUserInput(int argc, char* argv[])
             if (flag == "-c") {
                 string characters_string = string(argv[i + 1]);
                 if (validate_characters_input(characters_string)) {
-                    g_char_codes = CPBreaker::build_characters_array(characters_string);
-                    g_char_count = CPBreaker::get_array_size_for_symbols(characters_string);
+                    g_charset = Charset(characters_string);
                     characters_initialized = true;
                 }
                 else {
@@ -155,22 +155,21 @@ void handleUserInput(int argc, char* argv[])
 int main(int argc, char* argv[])
 {
     handleUserInput(argc, argv);
-    const unsigned int STEP = ceil(g_char_count / (float)NUM_THREADS);
+    unsigned int STEP = ceil(g_charset.get_count() / (float)NUM_THREADS);
     auto time_start = std::chrono::high_resolution_clock::now();
-    CPBreaker* password_breaker_ptr = new CPBreaker(g_char_codes, g_char_count, g_password_range_low, g_hash);
+    CPBreaker* password_breaker_ptr = new CPBreaker(g_charset, g_password_range_low, g_hash);
     for (int password_length = g_password_range_low; password_length <= g_password_range_high; ++password_length)
     {
         password_breaker_ptr->password_length = password_length;
-        int charsLeft = g_char_count;
-        unsigned long long combinations = pow(g_char_count, password_length);
+        int charsLeft = g_charset.get_count();
+        unsigned long long combinations = pow(g_charset.get_count(), password_length);
         std::vector<std::thread> my_threads;
+        cout << "Now checking passwords of length: " << password_length << std::endl;
+        cout << "Proceeding to check " << combinations << " combinations" << std::endl;
         for (int i = 0; i < NUM_THREADS && charsLeft > 0; ++i) {
             my_threads.push_back(std::thread{ &CPBreaker::check_password_range, password_breaker_ptr, i * STEP, i * STEP + fmin(STEP, charsLeft) });
             charsLeft -= fmin(STEP, charsLeft);
         }
-        cout << "All threads initialized\n";
-        cout << "Now checking passwords of length: " << password_length << std::endl;
-        cout << "Proceeding to check " << combinations << " combinations" << std::endl;
         for (std::thread& thr : my_threads) {
             thr.join();
         }
@@ -178,11 +177,10 @@ int main(int argc, char* argv[])
         if (password_breaker_ptr->password_was_found()) {
             break;
         }
-        cout << "No luck so far. Password is longer than " << password_length << " character(s)" << std::endl << std::endl;
+        cout << "No luck so far." << std::endl << std::endl;
     }  
     auto time_end = std::chrono::high_resolution_clock::now();
     auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(time_end - time_start).count();
     cout << "Execution time: " << duration << "ms" << std::endl;
-    delete[] g_char_codes;
     return 0;
 }

@@ -4,9 +4,12 @@
 #include <string>
 #include <iostream>
 #include <functional>
+#include <algorithm>
 #include <botan/bcrypt.h>
 #include <botan/argon2.h>
 #include <botan/sha160.h>
+#include <botan/hash.h>
+#include <botan/hex.h>
 #include "Password.h"
 #include "Charset.h"
 #include <stdexcept>
@@ -19,10 +22,12 @@ class CPBreaker
 		std::function<bool(std::string)> password_matches_hash;
 		bool check_bcrypt_hash(std::string password);
 		bool check_argon_hash(std::string password);
+		bool check_sha1_hash(std::string password);
 	public:
 		enum HASHING_FUNCTIONS {
 			BCRYPT = 0,
-			ARGON = 1
+			ARGON = 1,
+			SHA1 = 2
 		};
 		std::string hash;
 		unsigned int password_length;

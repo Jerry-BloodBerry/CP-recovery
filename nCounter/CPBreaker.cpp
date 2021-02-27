@@ -13,6 +13,9 @@ CPBreaker::CPBreaker(Charset charset, unsigned int password_length, std::string 
         case HASHING_FUNCTIONS::BCRYPT:
             this->password_matches_hash = std::bind(&CPBreaker::check_bcrypt_hash, this, std::placeholders::_1);
             break;
+        case HASHING_FUNCTIONS::SHA1:
+            this->password_matches_hash = std::bind(&CPBreaker::check_sha1_hash, this, std::placeholders::_1);
+            break;
         default:
             throw std::runtime_error("Undefined hashing function passed to CPBreaker::CPBreaker");
     }
@@ -26,6 +29,15 @@ bool CPBreaker::check_argon_hash(std::string password)
 bool CPBreaker::check_bcrypt_hash(std::string password)
 {
     return Botan::check_bcrypt(password, this->hash);
+}
+
+bool CPBreaker::check_sha1_hash(std::string password)
+{
+    std::unique_ptr<Botan::HashFunction> sha1_hash(Botan::HashFunction::create("SHA-1"));
+    sha1_hash->update(password);
+    std::string computed_hash = Botan::hex_encode(sha1_hash->final());
+    std::transform(computed_hash.begin(), computed_hash.end(), computed_hash.begin(), ::tolower);
+    return computed_hash == this->hash;
 }
 
 void CPBreaker::check_password_range(unsigned int start_char_code, unsigned int end_char_code)

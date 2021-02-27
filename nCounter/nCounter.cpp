@@ -145,6 +145,10 @@ void handleUserInput(int argc, char* argv[])
                     g_hashing_function = CPBreaker::ARGON;
                     hashing_function_initialized = true;
                 }
+                else if (algorithm_name == "sha-1") {
+                    g_hashing_function = CPBreaker::SHA1;
+                    hashing_function_initialized = true;
+                }
                 else {
                     cout << "Unsupported hashing algorithm " << algorithm_name << " given." << std::endl;
                     cout << "Please refer to -help for list of currently supported algorithms." << std::endl;
@@ -180,7 +184,7 @@ int main(int argc, char* argv[])
     handleUserInput(argc, argv);
     unsigned int STEP = ceil(g_charset.get_count() / (float)NUM_THREADS);
     auto time_start = std::chrono::high_resolution_clock::now();
-    CPBreaker* password_breaker_ptr = new CPBreaker(g_charset, g_password_range_low, g_hash, CPBreaker::ARGON);
+    CPBreaker* password_breaker_ptr = new CPBreaker(g_charset, g_password_range_low, g_hash, g_hashing_function);
     for (int password_length = g_password_range_low; password_length <= g_password_range_high; ++password_length)
     {
         password_breaker_ptr->password_length = password_length;

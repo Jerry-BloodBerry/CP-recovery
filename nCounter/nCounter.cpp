@@ -17,6 +17,7 @@ const unsigned int NUM_THREADS = std::thread::hardware_concurrency() * 2;
 Charset g_charset;
 unsigned int g_password_range_low;
 unsigned int g_password_range_high;
+int g_hashing_function;
 string g_hash;
 
 void printHelp()
@@ -25,10 +26,10 @@ void printHelp()
     cout << "#    #  #    #  #  #     #     #  #  #   #  #     #  #   # #" << std::endl;
     cout << "#    ####    ####  ####  #     #  #  #   #  ####  ####    #" << std::endl;
     cout << "#    #       # #   #     #     #  #   # #   #     # #     #" << std::endl;
-    cout << "#### #       #  #  ####  ####  ####    #    ####  #  #    #" << std::endl << std::endl;
+    cout << "#### #       #  #  ####  ####  ####    #    ####  #  #    #  v 1.0" << std::endl << std::endl;
     cout << "CP RECOVERY is a concurrent bruteforce password cracking utility." << std::endl;
     cout << "This version is meant to run on CPU only." << std::endl;
-    cout << "Currently the following hash functions are supported: Argon" << std::endl << std::endl;
+    cout << "Currently the following hash functions are supported: Argon2, Bcrypt" << std::endl << std::endl;
     cout << "Options:" << std::endl;
     cout << "-help => display help" << std::endl;
     cout << "-l => dash separated password length range, ex. 4-8 (m)" << std::endl;
@@ -39,6 +40,10 @@ void printHelp()
     cout << "    A => capital letters" << std::endl;
     cout << "    0 => numbers [0-9]" << std::endl;
     cout << "    % => special symbols (!, @, #, $, ...)" << std::endl;
+    cout << "-algo => hashing function that was used to create the hash (m)" << std::endl;
+    cout << "Currently supported hashing functions:" << std::endl;
+    cout << "    bcrypt" << std::endl;
+    cout << "    argon2" << std::endl;
 }
 
 bool string_contains_duplicate_characters(string characters)
@@ -78,10 +83,11 @@ void handleUserInput(int argc, char* argv[])
         printHelp();
         exit(0);
     }
-    else if (argc == 7) {
+    else {
         bool characters_initialized = false;
         bool password_range_initialized = false;
         bool hash_obtained_from_file = false;
+        bool hashing_function_initialized = false;
         for (int i = 1; i < argc; i+=2) {
             string flag = string(argv[i]);
             if (flag == "-c") {
@@ -128,27 +134,43 @@ void handleUserInput(int argc, char* argv[])
                     exit(4);
                 }
             }
+            else if (flag == "-algo") {
+                string algorithm_name = string(argv[i + 1]);
+                if (algorithm_name == "bcrypt") {
+                    g_hashing_function = CPBreaker::BCRYPT;
+                    hashing_function_initialized = true;
+                }
+                else if (algorithm_name == "argon2") {
+                    g_hashing_function = CPBreaker::ARGON;
+                    hashing_function_initialized = true;
+                }
+                else {
+                    cout << "Unsupported hashing algorithm " << algorithm_name << " given." << std::endl;
+                    cout << "Please refer to -help for list of currently supported algorithms." << std::endl;
+                    exit(5);
+                }
+            }
             else {
                 cout << "Unsupported flag " << flag << ". Please refer to -help for list of supported flags." << std::endl;
-                exit(5);
+                exit(6);
             }
         }
         if (!characters_initialized) {
-            cout << "Error: character flag missing.";
-            exit(6);
+            cout << "Error: character flag was not set. Please refer to -help on how to set this flag.";
+            exit(7);
         }
         if (!password_range_initialized) {
-            cout << "Error: password range flag missing.";
-            exit(6);
+            cout << "Error: password range flag was not set. Please refer to -help on how to set this flag.";
+            exit(7);
         }
         if (!hash_obtained_from_file) {
-            cout << "Error: file flag missing.";
-            exit(6);
+            cout << "Error: file flag was not set. Please refer to -help on how to set this flag.";
+            exit(7);
         }
-    }
-    else {
-        cout << "Invalid parameter number. Refer to -help on how to form correct input arguments." << std::endl;
-        exit(1);
+        if (!hashing_function_initialized) {
+            cout << "Error: algorithm flag was not set. Please refer to -help on how to set this flag.";
+            exit(7);
+        }
     }
 }
 

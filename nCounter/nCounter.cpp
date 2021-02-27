@@ -157,7 +157,7 @@ int main(int argc, char* argv[])
     handleUserInput(argc, argv);
     unsigned int STEP = ceil(g_charset.get_count() / (float)NUM_THREADS);
     auto time_start = std::chrono::high_resolution_clock::now();
-    CPBreaker* password_breaker_ptr = new CPBreaker(g_charset, g_password_range_low, g_hash);
+    CPBreaker* password_breaker_ptr = new CPBreaker(g_charset, g_password_range_low, g_hash, CPBreaker::ARGON);
     for (int password_length = g_password_range_low; password_length <= g_password_range_high; ++password_length)
     {
         password_breaker_ptr->password_length = password_length;

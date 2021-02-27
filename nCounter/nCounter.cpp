@@ -6,6 +6,7 @@
 #include <math.h>
 #include <regex>
 #include <fstream>
+#include <conio.h>
 #include "CPBreaker.h"
 #include "Charset.h"
 
@@ -204,5 +205,7 @@ int main(int argc, char* argv[])
     auto time_end = std::chrono::high_resolution_clock::now();
     auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(time_end - time_start).count();
     cout << "Execution time: " << duration << "ms" << std::endl;
+    cout << "Press any key to exit the program." << std::endl;
+    _getch();
     return 0;
 }

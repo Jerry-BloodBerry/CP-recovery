@@ -1,6 +1,6 @@
 # CP-recovery
 
-This is a program for concurrent password recovery. The program uses the bruteforce technique and currently supports only bcrpyt hashed passwords.
+This is a program for concurrent password recovery. The program uses the bruteforce technique and currently supports Bcrypt & Argon2 hashed passwords.
 Support for other hashing functions will be added soon.
 
 ## Help

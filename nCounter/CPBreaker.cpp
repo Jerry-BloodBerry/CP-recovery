@@ -39,7 +39,7 @@ void CPBreaker::check_password_range(unsigned int start_char_code, unsigned int 
         bool result = password_matches_hash(passwordString);
         if (result) {
             password_found = true;
-            std::cout << "The password is: " << password.toString() << std::endl;
+            std::cout << "The password is: " << passwordString << std::endl;
         }
         incrementationSucceeded = password.next() && (passwordString[0] != (char)end_char_code);
     }
